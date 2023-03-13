@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonRootName
 import java.util.*
 
 @JsonRootName("session")
-class PublicKeyFoundResponse(
-    @JsonProperty("public_key")
-    val publicKey: UUID
+class OrderCreatedResponse(
+    @JsonProperty("id")
+    val id: UUID
 )

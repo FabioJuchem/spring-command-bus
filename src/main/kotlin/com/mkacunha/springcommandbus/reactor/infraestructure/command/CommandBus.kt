@@ -12,7 +12,7 @@ class CommandBus(
     fun <R> execute(command: Command<R>): R = getHandler(command).execute(command)
 
     fun <C, R> execute(command: CompositeCommand<C, R>): R {
-        val handler = getHandler(command)
+        val handler = getCompositeHandler(command)
         val composition = command.composition()
 
         if (composition is CompositeCommand<*, *>) {
@@ -31,6 +31,6 @@ class CommandBus(
     private fun <R, T : Command<R>> isCompositeHandler(handler: CompositeCommandHandler<*, *, *>, command: T) =
         (handler.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0].typeName == command::class.java.typeName
 
-    private fun <T : CompositeCommand<C, R>, C, R> getHandler(command: T): CompositeCommandHandler<T, C, R> =
+    private fun <T : CompositeCommand<C, R>, C, R> getCompositeHandler(command: T): CompositeCommandHandler<T, C, R> =
         compositeHandlers.filter { isCompositeHandler(it, command) }[0] as CompositeCommandHandler<T, C, R>
 }
