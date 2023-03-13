@@ -5,16 +5,32 @@ import java.lang.reflect.ParameterizedType
 
 @Component
 class CommandBus(
-    private val handlers: List<CommandHandler<*, *>>
+    private val handlers: List<CommandHandler<*, *>>,
+    private val compositeHandlers: List<CompositeCommandHandler<*, *, *>>
 ) {
 
-    fun <R> execute(query: Command<R>): R = getHandler(query).execute(query)
+    fun <R> execute(command: Command<R>): R = getHandler(command).execute(command)
 
-    private fun <T : Command<R>, R> getHandler(query: T): CommandHandler<T, R> =
-        handlers.filter { isHandler(it, query) }[0] as CommandHandler<T, R>
+    fun <C, R> execute(command: CompositeCommand<C, R>): R {
+        val handler = getHandler(command)
+        val composition = command.composition()
 
+        if (composition is CompositeCommand<*, *>) {
+            return handler.execute(execute(composition) as C, command)
+        }
 
-    private fun <R, T : Command<R>> isHandler(handler: CommandHandler<*, *>, query: T) =
-        (handler.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0].typeName == query::class.java.typeName
+        return handler.execute(execute(composition), command)
+    }
 
+    private fun <T : Command<R>, R> getHandler(command: T): CommandHandler<T, R> =
+        handlers.filter { isHandler(it, command) }[0] as CommandHandler<T, R>
+
+    private fun <R, T : Command<R>> isHandler(handler: CommandHandler<*, *>, command: T) =
+        (handler.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0].typeName == command::class.java.typeName
+
+    private fun <R, T : Command<R>> isCompositeHandler(handler: CompositeCommandHandler<*, *, *>, command: T) =
+        (handler.javaClass.genericInterfaces[0] as ParameterizedType).actualTypeArguments[0].typeName == command::class.java.typeName
+
+    private fun <T : CompositeCommand<C, R>, C, R> getHandler(command: T): CompositeCommandHandler<T, C, R> =
+        compositeHandlers.filter { isCompositeHandler(it, command) }[0] as CompositeCommandHandler<T, C, R>
 }

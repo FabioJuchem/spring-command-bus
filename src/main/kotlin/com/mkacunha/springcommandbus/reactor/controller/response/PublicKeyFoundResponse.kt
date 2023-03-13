@@ -7,5 +7,5 @@ import java.util.*
 @JsonRootName("session")
 class PublicKeyFoundResponse(
     @JsonProperty("public-key")
-    publicKey: UUID
+    val publicKey: UUID
 )

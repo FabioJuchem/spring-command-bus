@@ -23,13 +23,13 @@ class SessionController(
             .map { CreatedSessionResponse(it) }
 
     @GetMapping("/sessions")
-    fun findSession(@RequestHeader("x-session-state") sessionId: UUID): Mono<SessionFoundResponse> =
+    fun findSession(@RequestHeader("x-session-id") sessionId: UUID): Mono<SessionFoundResponse> =
         commandBus
             .execute(FindSessionById(sessionId))
             .map { SessionFoundResponse(it) }
 
     @GetMapping("/sessions/publickey")
-    fun findPublicKey(@RequestHeader("x-session-state") sessionId: UUID): Mono<PublicKeyFoundResponse> =
+    fun findPublicKey(@RequestHeader("x-session-id") sessionId: UUID): Mono<PublicKeyFoundResponse> =
         commandBus
             .execute(FindPublicKey(sessionId))
             .map { PublicKeyFoundResponse(it) }
